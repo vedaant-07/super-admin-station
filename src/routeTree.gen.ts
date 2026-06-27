@@ -19,6 +19,7 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRolesRouteImport } from './routes/admin.roles'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
@@ -76,6 +77,11 @@ const AdminRolesRoute = AdminRolesRouteImport.update({
   path: '/roles',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AdminContentRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRouteWithChildren
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AdminContentRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRouteWithChildren
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/admin/content': typeof AdminContentRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/notifications': typeof AdminNotificationsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/roles': typeof AdminRolesRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/support': typeof AdminSupportRouteWithChildren
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/logs'
     | '/admin/notifications'
+    | '/admin/payments'
     | '/admin/roles'
     | '/admin/settings'
     | '/admin/support'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/logs'
     | '/admin/notifications'
+    | '/admin/payments'
     | '/admin/roles'
     | '/admin/settings'
     | '/admin/support'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/logs'
     | '/admin/notifications'
+    | '/admin/payments'
     | '/admin/roles'
     | '/admin/settings'
     | '/admin/support'
@@ -296,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRolesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/notifications': {
       id: '/admin/notifications'
       path: '/notifications'
@@ -359,6 +378,7 @@ interface AdminRouteChildren {
   AdminContentRoute: typeof AdminContentRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminRolesRoute: typeof AdminRolesRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminSupportRoute: typeof AdminSupportRouteWithChildren
@@ -373,6 +393,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminContentRoute: AdminContentRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   AdminRolesRoute: AdminRolesRoute,
   AdminSettingsRoute: AdminSettingsRoute,
   AdminSupportRoute: AdminSupportRouteWithChildren,
