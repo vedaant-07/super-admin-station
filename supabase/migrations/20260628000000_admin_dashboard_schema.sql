@@ -183,50 +183,60 @@ alter table public.app_settings enable row level security;
 alter table public.admin_logs enable row level security;
 
 -- Profiles
-create policy if not exists "profiles_read_self_or_admin"
+drop policy if exists "profiles_read_self_or_admin" on public.profiles;
+create policy "profiles_read_self_or_admin"
   on public.profiles for select to authenticated
   using (id = auth.uid() or public.is_admin(auth.uid()));
 
-create policy if not exists "profiles_update_self_or_admin"
+drop policy if exists "profiles_update_self_or_admin" on public.profiles;
+create policy "profiles_update_self_or_admin"
   on public.profiles for update to authenticated
   using (id = auth.uid() or public.is_admin(auth.uid()))
   with check (id = auth.uid() or public.is_admin(auth.uid()));
 
-create policy if not exists "profiles_admin_insert"
+drop policy if exists "profiles_admin_insert" on public.profiles;
+create policy "profiles_admin_insert"
   on public.profiles for insert to authenticated
   with check (id = auth.uid() or public.is_admin(auth.uid()));
 
 -- Roles
-create policy if not exists "user_roles_read_self_or_admin"
+drop policy if exists "user_roles_read_self_or_admin" on public.user_roles;
+create policy "user_roles_read_self_or_admin"
   on public.user_roles for select to authenticated
   using (user_id = auth.uid() or public.is_admin(auth.uid()));
 
-create policy if not exists "user_roles_super_admin_manage"
+drop policy if exists "user_roles_super_admin_manage" on public.user_roles;
+create policy "user_roles_super_admin_manage"
   on public.user_roles for all to authenticated
   using (public.has_role(auth.uid(), 'super_admin'))
   with check (public.has_role(auth.uid(), 'super_admin'));
 
 -- Support tickets: app/website can submit, admins can manage.
-create policy if not exists "support_tickets_public_insert"
+drop policy if exists "support_tickets_public_insert" on public.support_tickets;
+create policy "support_tickets_public_insert"
   on public.support_tickets for insert to anon, authenticated
   with check (true);
 
-create policy if not exists "support_tickets_admin_manage"
+drop policy if exists "support_tickets_admin_manage" on public.support_tickets;
+create policy "support_tickets_admin_manage"
   on public.support_tickets for all to authenticated
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
 
-create policy if not exists "support_tickets_user_read_own"
+drop policy if exists "support_tickets_user_read_own" on public.support_tickets;
+create policy "support_tickets_user_read_own"
   on public.support_tickets for select to authenticated
   using (user_id = auth.uid());
 
 -- Ticket messages
-create policy if not exists "ticket_messages_admin_manage"
+drop policy if exists "ticket_messages_admin_manage" on public.ticket_messages;
+create policy "ticket_messages_admin_manage"
   on public.ticket_messages for all to authenticated
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
 
-create policy if not exists "ticket_messages_user_read_non_internal_own_ticket"
+drop policy if exists "ticket_messages_user_read_non_internal_own_ticket" on public.ticket_messages;
+create policy "ticket_messages_user_read_non_internal_own_ticket"
   on public.ticket_messages for select to authenticated
   using (
     not is_internal
@@ -238,21 +248,25 @@ create policy if not exists "ticket_messages_user_read_non_internal_own_ticket"
   );
 
 -- Notifications, settings, logs
-create policy if not exists "notifications_admin_manage"
+drop policy if exists "notifications_admin_manage" on public.notifications;
+create policy "notifications_admin_manage"
   on public.notifications for all to authenticated
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
 
-create policy if not exists "app_settings_admin_manage"
+drop policy if exists "app_settings_admin_manage" on public.app_settings;
+create policy "app_settings_admin_manage"
   on public.app_settings for all to authenticated
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
 
-create policy if not exists "app_settings_public_read"
+drop policy if exists "app_settings_public_read" on public.app_settings;
+create policy "app_settings_public_read"
   on public.app_settings for select to anon, authenticated
   using (scope in ('app', 'website'));
 
-create policy if not exists "admin_logs_admin_read_insert"
+drop policy if exists "admin_logs_admin_read_insert" on public.admin_logs;
+create policy "admin_logs_admin_read_insert"
   on public.admin_logs for all to authenticated
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
