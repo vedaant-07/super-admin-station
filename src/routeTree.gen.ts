@@ -20,6 +20,7 @@ import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminRolesRouteImport } from './routes/admin.roles'
 import { Route as AdminNotificationsRouteImport } from './routes/admin.notifications'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as AdminSupportIdRouteImport } from './routes/admin.support.$id'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -77,6 +78,11 @@ const AdminLogsRoute = AdminLogsRouteImport.update({
   path: '/logs',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSupportIdRoute = AdminSupportIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/notifications': typeof AdminNotificationsRoute
   '/admin/roles': typeof AdminRolesRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/reset-password'
+    | '/admin/analytics'
     | '/admin/logs'
     | '/admin/notifications'
     | '/admin/roles'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/admin/analytics'
     | '/admin/logs'
     | '/admin/notifications'
     | '/admin/roles'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/reset-password'
+    | '/admin/analytics'
     | '/admin/logs'
     | '/admin/notifications'
     | '/admin/roles'
@@ -255,6 +267,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminLogsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/support/$id': {
       id: '/admin/support/$id'
       path: '/$id'
@@ -278,6 +297,7 @@ const AdminSupportRouteWithChildren = AdminSupportRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminLogsRoute: typeof AdminLogsRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminRolesRoute: typeof AdminRolesRoute
@@ -288,6 +308,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminLogsRoute: AdminLogsRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminRolesRoute: AdminRolesRoute,
