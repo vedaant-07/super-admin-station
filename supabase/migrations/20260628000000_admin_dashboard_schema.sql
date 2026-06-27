@@ -1,5 +1,6 @@
 -- SE7EN FIT admin dashboard schema
 -- Run this in the Supabase SQL editor or through Supabase migrations before using the dashboard.
+-- Compatible with the existing SE7EN FIT public.profiles table that uses user_id as the primary key.
 
 create extension if not exists pgcrypto;
 
@@ -39,8 +40,10 @@ exception when duplicate_object then null;
 end $$;
 
 create table if not exists public.profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  id uuid,
   email text,
+  role text not null default 'user',
   full_name text,
   phone text,
   avatar_url text,
@@ -51,6 +54,21 @@ create table if not exists public.profiles (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.profiles add column if not exists user_id uuid;
+alter table public.profiles add column if not exists id uuid;
+alter table public.profiles add column if not exists role text not null default 'user';
+alter table public.profiles add column if not exists source public.platform_source not null default 'app';
+alter table public.profiles add column if not exists status public.user_status not null default 'active';
+alter table public.profiles add column if not exists last_seen_at timestamptz;
+alter table public.profiles add column if not exists metadata jsonb not null default '{}'::jsonb;
+alter table public.profiles add column if not exists updated_at timestamptz not null default now();
+
+update public.profiles set id = user_id where id is null and user_id is not null;
+update public.profiles set user_id = id where user_id is null and id is not null;
+
+create unique index if not exists profiles_id_unique_idx on public.profiles(id) where id is not null;
+create index if not exists profiles_role_idx on public.profiles(role);
 
 create table if not exists public.user_roles (
   id uuid primary key default gen_random_uuid(),
@@ -129,6 +147,28 @@ begin
 end;
 $$;
 
+create or replace function public.sync_profile_identity_columns()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.id is null and new.user_id is not null then
+    new.id := new.user_id;
+  end if;
+
+  if new.user_id is null and new.id is not null then
+    new.user_id := new.id;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_sync_identity_columns on public.profiles;
+create trigger profiles_sync_identity_columns
+before insert or update on public.profiles
+for each row execute function public.sync_profile_identity_columns();
+
 drop trigger if exists profiles_touch_updated_at on public.profiles;
 create trigger profiles_touch_updated_at
 before update on public.profiles
@@ -156,6 +196,11 @@ as $$
     from public.user_roles
     where user_id = _user_id
       and role = _role
+  ) or exists (
+    select 1
+    from public.profiles
+    where coalesce(user_id, id) = _user_id
+      and role = _role::text
   );
 $$;
 
@@ -170,6 +215,11 @@ as $$
     select 1
     from public.user_roles
     where user_id = _user_id
+      and role in ('super_admin', 'admin', 'staff')
+  ) or exists (
+    select 1
+    from public.profiles
+    where coalesce(user_id, id) = _user_id
       and role in ('super_admin', 'admin', 'staff')
   );
 $$;
@@ -186,18 +236,18 @@ alter table public.admin_logs enable row level security;
 drop policy if exists "profiles_read_self_or_admin" on public.profiles;
 create policy "profiles_read_self_or_admin"
   on public.profiles for select to authenticated
-  using (id = auth.uid() or public.is_admin(auth.uid()));
+  using (coalesce(id, user_id) = auth.uid() or public.is_admin(auth.uid()));
 
 drop policy if exists "profiles_update_self_or_admin" on public.profiles;
 create policy "profiles_update_self_or_admin"
   on public.profiles for update to authenticated
-  using (id = auth.uid() or public.is_admin(auth.uid()))
-  with check (id = auth.uid() or public.is_admin(auth.uid()));
+  using (coalesce(id, user_id) = auth.uid() or public.is_admin(auth.uid()))
+  with check (coalesce(id, user_id) = auth.uid() or public.is_admin(auth.uid()));
 
 drop policy if exists "profiles_admin_insert" on public.profiles;
 create policy "profiles_admin_insert"
   on public.profiles for insert to authenticated
-  with check (id = auth.uid() or public.is_admin(auth.uid()));
+  with check (coalesce(id, user_id) = auth.uid() or public.is_admin(auth.uid()));
 
 -- Roles
 drop policy if exists "user_roles_read_self_or_admin" on public.user_roles;
