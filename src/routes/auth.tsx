@@ -9,7 +9,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { ensureDemoAdmin } from "@/lib/demo.functions";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Sign in — Admin Console" }] }),
@@ -67,7 +66,7 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created. You can sign in now.");
+    toast.success("Account created. Ask a super admin to grant access before signing in.");
   }
 
   async function reset() {
@@ -80,21 +79,6 @@ function AuthPage() {
     });
     if (error) toast.error(error.message);
     else toast.success("Reset email sent");
-  }
-
-  async function demoLogin() {
-    setLoading(true);
-    try {
-      const { email, password } = await ensureDemoAdmin();
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
-      toast.success("Signed in as demo admin");
-      navigate({ to: "/admin", replace: true });
-    } catch (err: any) {
-      toast.error(err?.message ?? "Demo login failed");
-    } finally {
-      setLoading(false);
-    }
   }
 
   return (
@@ -110,21 +94,6 @@ function AuthPage() {
             <CardDescription>Manage your app and website from one place.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 space-y-2 rounded-md border border-dashed border-border bg-muted/30 p-3">
-              <p className="text-xs text-muted-foreground">
-                Temporary demo access — full super admin privileges. Remove before production.
-              </p>
-              <Button
-                type="button"
-                variant="secondary"
-                className="w-full"
-                disabled={loading}
-                onClick={demoLogin}
-              >
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Continue as demo admin
-              </Button>
-            </div>
             <Tabs defaultValue="signin">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign in</TabsTrigger>
@@ -168,7 +137,7 @@ function AuthPage() {
                     {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    The first account you create can be promoted to super admin from the database.
+                    New accounts are not admins automatically. A super admin must grant staff, admin, or super admin access.
                   </p>
                 </form>
               </TabsContent>
