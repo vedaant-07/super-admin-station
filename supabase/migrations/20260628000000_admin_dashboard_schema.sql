@@ -140,6 +140,7 @@ create table if not exists public.admin_logs (
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   new.updated_at = now();
@@ -150,6 +151,7 @@ $$;
 create or replace function public.sync_profile_identity_columns()
 returns trigger
 language plpgsql
+set search_path = public
 as $$
 begin
   if new.id is null and new.user_id is not null then
@@ -261,11 +263,12 @@ create policy "user_roles_super_admin_manage"
   using (public.has_role(auth.uid(), 'super_admin'))
   with check (public.has_role(auth.uid(), 'super_admin'));
 
--- Support tickets: app/website can submit, admins can manage.
+-- Support tickets: unauthenticated website/app support should go through the backend /api/support route.
 drop policy if exists "support_tickets_public_insert" on public.support_tickets;
-create policy "support_tickets_public_insert"
-  on public.support_tickets for insert to anon, authenticated
-  with check (true);
+drop policy if exists "support_tickets_authenticated_insert" on public.support_tickets;
+create policy "support_tickets_authenticated_insert"
+  on public.support_tickets for insert to authenticated
+  with check (user_id is null or user_id = auth.uid());
 
 drop policy if exists "support_tickets_admin_manage" on public.support_tickets;
 create policy "support_tickets_admin_manage"
@@ -320,6 +323,11 @@ create policy "admin_logs_admin_read_insert"
   on public.admin_logs for all to authenticated
   using (public.is_admin(auth.uid()))
   with check (public.is_admin(auth.uid()));
+
+revoke execute on function public.has_role(uuid, public.app_role) from anon;
+revoke execute on function public.is_admin(uuid) from anon;
+grant execute on function public.has_role(uuid, public.app_role) to authenticated;
+grant execute on function public.is_admin(uuid) to authenticated;
 
 insert into public.app_settings (key, scope, value, description)
 values
