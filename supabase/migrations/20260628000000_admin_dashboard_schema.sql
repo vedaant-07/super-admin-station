@@ -10,9 +10,11 @@ exception when duplicate_object then null;
 end $$;
 
 do $$ begin
-  create type public.platform_source as enum ('app', 'website', 'admin');
+  create type public.platform_source as enum ('app', 'website', 'admin', 'gym_owner');
 exception when duplicate_object then null;
 end $$;
+
+alter type public.platform_source add value if not exists 'gym_owner';
 
 do $$ begin
   create type public.ticket_priority as enum ('low', 'normal', 'high', 'urgent');
