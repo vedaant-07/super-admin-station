@@ -6,25 +6,11 @@ export const API_BASE_URL = RAW_API_BASE_URL.endsWith("/") ? RAW_API_BASE_URL.sl
 export class ApiError extends Error {
   status: number;
   data: unknown;
-  constructor(message: string, status = 0, data: unknown = null) {
-    super(message);
-    this.name = "ApiError";
-    this.status = status;
-    this.data = data;
-  }
+  constructor(message: string, status = 0, data: unknown = null) { super(message); this.name = "ApiError"; this.status = status; this.data = data; }
 }
 
-async function getAccessToken() {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token || "";
-}
-
-function normalizePayload(payload: any) {
-  if (payload?.item !== undefined) return payload.item;
-  if (payload?.items !== undefined) return payload.items;
-  if (payload?.data !== undefined) return payload.data;
-  return payload;
-}
+async function getAccessToken() { const { data } = await supabase.auth.getSession(); return data.session?.access_token || ""; }
+function normalizePayload(payload: any) { if (payload?.item !== undefined) return payload.item; if (payload?.items !== undefined) return payload.items; if (payload?.data !== undefined) return payload.data; return payload; }
 
 export async function apiRequest<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const token = await getAccessToken();
@@ -34,13 +20,7 @@ export async function apiRequest<T = any>(path: string, options: RequestInit = {
   headers.set("Accept", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
   if (body && !isFormData && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
-
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    ...options,
-    headers,
-    body: body && !isFormData && typeof body !== "string" ? JSON.stringify(body) : body,
-  });
-
+  const response = await fetch(`${API_BASE_URL}${path}`, { ...options, headers, body: body && !isFormData && typeof body !== "string" ? JSON.stringify(body) : body });
   const text = await response.text();
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) throw new ApiError("Production API returned an invalid response.", response.status, text.slice(0, 300));
@@ -62,6 +42,7 @@ export const adminApi = {
   memberships: () => apiRequest("/admin/memberships"),
   leads: () => apiRequest("/admin/leads"),
   attendance: () => apiRequest("/admin/attendance"),
+  payments: () => apiRequest("/admin/payments"),
   updateGymStatus: (gymId: string, status: string) => apiRequest(`/admin/gyms/${gymId}/status`, { method: "PATCH", body: json({ status }) }),
   advertisements: () => apiRequest("/admin/advertisements"),
   createAdvertisement: (payload: unknown) => apiRequest("/admin/advertisements", { method: "POST", body: json(payload) }),
@@ -70,7 +51,11 @@ export const adminApi = {
   communityPosts: () => apiRequest("/admin/community/posts"),
   moderateCommunityPost: (id: string, payload: unknown) => apiRequest(`/admin/community/posts/${id}/moderate`, { method: "PATCH", body: json(payload) }),
   supportTickets: () => apiRequest("/admin/support/tickets"),
+  supportTicket: (id: string) => apiRequest(`/admin/support/tickets/${id}`),
+  supportTicketMessages: (id: string) => apiRequest(`/admin/support/tickets/${id}/messages`),
+  createSupportTicketMessage: (id: string, payload: unknown) => apiRequest(`/admin/support/tickets/${id}/messages`, { method: "POST", body: json(payload) }),
   updateSupportTicket: (id: string, payload: unknown) => apiRequest(`/admin/support/tickets/${id}`, { method: "PATCH", body: json(payload) }),
+  deleteSupportTicket: (id: string) => apiRequest(`/admin/support/tickets/${id}`, { method: "DELETE" }),
   notifications: () => apiRequest("/admin/notifications"),
   createNotification: (payload: unknown) => apiRequest("/admin/notifications", { method: "POST", body: json(payload) }),
   settings: () => apiRequest("/admin/settings"),
