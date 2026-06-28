@@ -6,7 +6,6 @@ export const API_BASE_URL = RAW_API_BASE_URL.endsWith("/") ? RAW_API_BASE_URL.sl
 export class ApiError extends Error {
   status: number;
   data: unknown;
-
   constructor(message: string, status = 0, data: unknown = null) {
     super(message);
     this.name = "ApiError";
@@ -31,7 +30,6 @@ export async function apiRequest<T = any>(path: string, options: RequestInit = {
   const token = await getAccessToken();
   const body = options.body;
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
-
   const headers = new Headers(options.headers);
   headers.set("Accept", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -45,35 +43,37 @@ export async function apiRequest<T = any>(path: string, options: RequestInit = {
 
   const text = await response.text();
   const contentType = response.headers.get("content-type") || "";
-  if (!contentType.includes("application/json")) {
-    throw new ApiError("Production API returned an invalid response.", response.status, text.slice(0, 300));
-  }
-
+  if (!contentType.includes("application/json")) throw new ApiError("Production API returned an invalid response.", response.status, text.slice(0, 300));
   const payload = text ? JSON.parse(text) : null;
-  if (!response.ok || payload?.success === false) {
-    throw new ApiError(payload?.error || payload?.message || "Request failed", response.status, payload);
-  }
-
+  if (!response.ok || payload?.success === false) throw new ApiError(payload?.error || payload?.message || "Request failed", response.status, payload);
   return normalizePayload(payload) as T;
 }
+
+const json = (payload: unknown) => JSON.stringify(payload);
 
 export const adminApi = {
   dashboard: () => apiRequest("/admin/dashboard"),
   users: () => apiRequest("/admin/users"),
   user: (id: string) => apiRequest(`/admin/users/${id}`),
-  updateUserStatus: (id: string, status: string) => apiRequest(`/admin/users/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
-  updateUserRole: (id: string, role: string) => apiRequest(`/admin/users/${id}/role`, { method: "PATCH", body: JSON.stringify({ role }) }),
+  updateUserStatus: (id: string, status: string) => apiRequest(`/admin/users/${id}/status`, { method: "PATCH", body: json({ status }) }),
+  updateUserRole: (id: string, role: string) => apiRequest(`/admin/users/${id}/role`, { method: "PATCH", body: json({ role }) }),
   gyms: () => apiRequest("/admin/gyms"),
-  updateGymStatus: (gymId: string, status: string) => apiRequest(`/admin/gyms/${gymId}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  gymOwners: () => apiRequest("/admin/gym-owners"),
+  memberships: () => apiRequest("/admin/memberships"),
+  leads: () => apiRequest("/admin/leads"),
+  attendance: () => apiRequest("/admin/attendance"),
+  updateGymStatus: (gymId: string, status: string) => apiRequest(`/admin/gyms/${gymId}/status`, { method: "PATCH", body: json({ status }) }),
   advertisements: () => apiRequest("/admin/advertisements"),
-  createAdvertisement: (payload: unknown) => apiRequest("/admin/advertisements", { method: "POST", body: JSON.stringify(payload) }),
-  updateAdvertisement: (id: string, payload: unknown) => apiRequest(`/admin/advertisements/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  createAdvertisement: (payload: unknown) => apiRequest("/admin/advertisements", { method: "POST", body: json(payload) }),
+  updateAdvertisement: (id: string, payload: unknown) => apiRequest(`/admin/advertisements/${id}`, { method: "PATCH", body: json(payload) }),
   deleteAdvertisement: (id: string) => apiRequest(`/admin/advertisements/${id}`, { method: "DELETE" }),
+  communityPosts: () => apiRequest("/admin/community/posts"),
+  moderateCommunityPost: (id: string, payload: unknown) => apiRequest(`/admin/community/posts/${id}/moderate`, { method: "PATCH", body: json(payload) }),
   supportTickets: () => apiRequest("/admin/support/tickets"),
-  updateSupportTicket: (id: string, payload: unknown) => apiRequest(`/admin/support/tickets/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  updateSupportTicket: (id: string, payload: unknown) => apiRequest(`/admin/support/tickets/${id}`, { method: "PATCH", body: json(payload) }),
   notifications: () => apiRequest("/admin/notifications"),
-  createNotification: (payload: unknown) => apiRequest("/admin/notifications", { method: "POST", body: JSON.stringify(payload) }),
+  createNotification: (payload: unknown) => apiRequest("/admin/notifications", { method: "POST", body: json(payload) }),
   settings: () => apiRequest("/admin/settings"),
-  updateSetting: (key: string, payload: unknown) => apiRequest(`/admin/settings/${key}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  updateSetting: (key: string, payload: unknown) => apiRequest(`/admin/settings/${key}`, { method: "PATCH", body: json(payload) }),
   logs: () => apiRequest("/admin/logs"),
 };
