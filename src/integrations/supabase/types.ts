@@ -280,7 +280,7 @@ export type Database = {
       app_role: "super_admin" | "admin" | "staff" | "user"
       notif_channel: "push" | "announcement" | "email"
       notif_status: "draft" | "scheduled" | "sent" | "failed"
-      platform_source: "app" | "website" | "admin"
+      platform_source: "app" | "website" | "admin" | "gym_owner"
       ticket_priority: "low" | "normal" | "high" | "urgent"
       ticket_status: "new" | "open" | "pending" | "resolved" | "closed"
       user_status: "active" | "blocked" | "pending"
@@ -373,51 +373,3 @@ export type TablesUpdate<
       ? U
       : never
     : never
-
-export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
-  }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
-}
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      app_role: ["super_admin", "admin", "staff", "user"],
-      notif_channel: ["push", "announcement", "email"],
-      notif_status: ["draft", "scheduled", "sent", "failed"],
-      platform_source: ["app", "website", "admin"],
-      ticket_priority: ["low", "normal", "high", "urgent"],
-      ticket_status: ["new", "open", "pending", "resolved", "closed"],
-      user_status: ["active", "blocked", "pending"],
-    },
-  },
-} as const
