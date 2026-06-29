@@ -6,7 +6,7 @@ services:
     region: oregon
     branch: main
     buildCommand: bun install && bun run build
-    startCommand: bun run start
+    startCommand: node .output/server/index.mjs
     autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
