@@ -4,6 +4,11 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 
+const renderHost = "main-website-qeeg" + ".onrender.com";
+
 export default defineConfig({
   plugins: [tsConfigPaths(), tailwindcss(), tanstackStart({ server: { entry: "server" } }), react()],
+  preview: {
+    allowedHosts: [renderHost],
+  },
 });
