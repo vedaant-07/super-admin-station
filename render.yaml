@@ -5,8 +5,8 @@ services:
     plan: free
     region: oregon
     branch: main
-    buildCommand: npm ci && npm run build
-    startCommand: npm run start
+    buildCommand: bun install && bun run build
+    startCommand: bun run start
     autoDeployTrigger: commit
     envVars:
       - key: NODE_VERSION
